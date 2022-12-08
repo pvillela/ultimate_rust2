@@ -1,7 +1,7 @@
 use crossbeam::channel::{self, Receiver, Sender};
 use std::{thread, time::Duration};
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 enum Lunch {
     Soup,
     Salad,
@@ -23,9 +23,11 @@ fn cafeteria_worker(name: &str, orders: Receiver<&str>, lunches: Sender<Lunch>) 
         }
         println!("{} sends a {:?}", name, lunch);
         if lunches.send(lunch).is_err() {
+            println!("{} received error when sending lunch {:?}", name, lunch);
             break;
         }
     }
+    println!("{} has no more orders", name);
 }
 
 fn main() {
@@ -47,6 +49,7 @@ fn main() {
         let _ = orders_tx.send(order);
     }
     drop(orders_tx);
+    println!("No more orders");
 
     for lunch in lunches_rx {
         println!("Order Up! -> {:?}", lunch);
